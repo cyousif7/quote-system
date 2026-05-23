@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
+
 // Load .env file variables into process.env
 // Must be called before anything that needs environment variables
-
 dotenv.config();
 
 const express = require('express');

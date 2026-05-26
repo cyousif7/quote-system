@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const lookupVehicle = require("../services/vehicleLookup.js");
 const pool = require("../config/db");
 
 // Instantiate router construct
@@ -10,8 +11,12 @@ router.post("/", async (req, res) => {
         // These variable names are used as listed based on request's req.body attributes
         const { customer_name, customer_email, customer_phone, vin, problem_description } = req.body;
 
+        // Get vehicle data from the vehicle lookup class
+        const vehicleData = await lookupVehicle(vin);
+        const { vehicle_year, vehicle_make, vehicle_model, vehicle_trim } = vehicleData || {};  // If returned vehicle data is null, destructure from an empty object instead
+
         // Insert values from the request into the tickets table and store the resulting tuples
-        const result = await pool.query(`INSERT INTO tickets (customer_name, customer_email, customer_phone, vin, problem_description) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [customer_name, customer_email, customer_phone, vin, problem_description]);
+        const result = await pool.query(`INSERT INTO tickets (customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`, [customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim]);
 
         // Response to frontend request
         res.status(201).json({ 
@@ -21,6 +26,7 @@ router.post("/", async (req, res) => {
     }
 
     catch(error) {
+        console.log('ERROR:', error.message);
         res.status(500).json({ 
             success: false, 
             message: "Server error."});

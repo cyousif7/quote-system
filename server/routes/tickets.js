@@ -26,11 +26,30 @@ router.post("/", async (req, res) => {
     }
 
     catch(error) {
-        console.log('ERROR:', error.message);
+        console.log("ERROR: ", error.message);
         res.status(500).json({ 
             success: false, 
             message: "Server error."});
     }
+});
+
+router.get("/", async (req, res) => {
+    try {
+        // Query database (Read) for all current tickets
+        // This will show up on the shop's browser as the current tickets to work on
+        const result = await pool.query(`SELECT * FROM tickets ORDER BY created_at DESC`);
+
+        // Respond to frontend. Send the successful result to the frontend
+        res.status(200).json({ success: true, tickets: result.rows, message: "Database retrieval successful." })
+    }
+
+    catch(error) {
+        console.log("ERROR: ", error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error."});
+    }
+
 });
 
 // Export router to any other files that may need it

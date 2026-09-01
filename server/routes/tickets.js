@@ -40,7 +40,10 @@ router.get("/", async (req, res) => {
         const result = await pool.query(`SELECT * FROM tickets ORDER BY created_at DESC`);
 
         // Respond to frontend. Send the successful result to the frontend
-        res.status(200).json({ success: true, tickets: result.rows, message: "Database retrieval successful." })
+        res.status(200).json({ 
+            success: true, 
+            tickets: result.rows, 
+            message: "Database retrieval successful." })
     }
 
     catch(error) {
@@ -49,7 +52,27 @@ router.get("/", async (req, res) => {
             success: false, 
             message: "Server error."});
     }
+});
 
+router.patch("/:id", async (req, res) => {
+    try {
+        const { status } = req.body;
+        const { id } = req.params;
+
+        const update = await pool.query(`UPDATE tickets SET status = $1 WHERE id = $2 RETURNING *`, [status, id])
+        res.status(200).json({ 
+            success: true, 
+            tickets: update.rows[0], 
+            message: "Database update successful."})
+    }
+
+    catch(error) {
+        console.log("ERROR: ", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error."
+        });
+    }
 });
 
 // Export router to any other files that may need it

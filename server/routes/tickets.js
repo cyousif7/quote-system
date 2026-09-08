@@ -56,9 +56,11 @@ router.get("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
     try {
+        // destructure (pull "status" and "id" out so that we can just write "status" or "id" instead of req.body.status or req.params.id)
         const { status } = req.body;
         const { id } = req.params;
 
+        // Query DB to update tickets by setting tickets to request status for the requested id.
         const update = await pool.query(`UPDATE tickets SET status = $1 WHERE id = $2 RETURNING *`, [status, id])
         res.status(200).json({ 
             success: true, 

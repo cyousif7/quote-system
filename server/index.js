@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const tickets = require('./routes/tickets');
+const authRouter = require('./routes/auth.js');
 
 // Call the express method on app to give access to various methods within
 const app = express();
@@ -33,6 +34,8 @@ const ticketLimiter = rateLimit({
 app.use('/api/tickets', ticketLimiter);
 
 app.use('/api/tickets', tickets);
+
+app.use('/api/auth', authRouter);
 
 // Server
 

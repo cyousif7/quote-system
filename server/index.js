@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
 const cookieParser = require('cookie-parser');
+const authMiddleware = require('./middleware/auth');
 
 // Call the express method on app to give access to various methods within
 const app = express();
@@ -36,7 +37,7 @@ const ticketLimiter = rateLimit({
 });
 app.use('/api/tickets', ticketLimiter);
 
-app.use('/api/tickets', tickets);
+app.use('/api/tickets', authMiddleware, tickets);
 
 app.use('/api/auth', authRouter);
 

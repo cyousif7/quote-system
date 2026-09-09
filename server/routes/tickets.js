@@ -1,11 +1,25 @@
 const { Router } = require("express");
 const lookupVehicle = require("../services/vehicleLookup.js");
 const pool = require("../config/db");
+const { body, validationResult } = require('express-validator');
+const authMiddleware = require('../middleware/auth');
 
 // Instantiate router construct
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", [
+    body('customer_name').notEmpty(),
+    body('customer_email').isEmail(),
+    body('customer_phone').optional(),
+    body('vin').notEmpty().isLength({ min: 17, max: 17 }),
+    body('problem_description').notEmpty()
+], async (req, res) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
     try {
         // Declare variables that must match the name the frontend sent in req.body
         // These variable names are used as listed based on request's req.body attributes
@@ -33,7 +47,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
     try {
         // Query database (Read) for all current tickets
         // This will show up on the shop's browser as the current tickets to work on
@@ -54,7 +68,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authMiddleware, async (req, res) => {
     try {
         // destructure (pull "status" and "id" out so that we can just write "status" or "id" instead of req.body.status or req.params.id)
         const { status } = req.body;

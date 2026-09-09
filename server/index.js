@@ -11,11 +11,15 @@ const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
 const cookieParser = require('cookie-parser');
 const authMiddleware = require('./middleware/auth');
+const helmet = require('helmet');
 
 // Call the express method on app to give access to various methods within
 const app = express();
 
 // Middleware
+
+// Use helmet to prevent security vulnerabilities
+app.use(helmet())
 
 // Parse incoming JSON bodies so req.body can work in routes
 app.use(express.json());
@@ -25,6 +29,7 @@ app.use(cookieParser());
 // Controls which domains can call the API
 // In production, this will be locked to the frontend's domain only
 app.use(cors({
+    credentials: true,
     origin: process.env.CLIENT_URL || 'http://localhost:5173'
 }));
 
@@ -35,9 +40,18 @@ const ticketLimiter = rateLimit({
     max: 20,
     message: { error: 'Too many requests, please try again later.' }
 });
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes in milliseconds
+    max: 10,
+    message: { error: 'Too many requests, please try again later.' }
+})
+
 app.use('/api/tickets', ticketLimiter);
 
-app.use('/api/tickets', authMiddleware, tickets);
+app.use('/api/auth', authLimiter);
+
+app.use('/api/tickets', tickets);
 
 app.use('/api/auth', authRouter);
 

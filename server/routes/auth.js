@@ -50,7 +50,7 @@ router.post("/login", async (req, res) => {
         const hash = result.rows[0].password_hash;
         const match = await bcrypt.compare(password, hash);
 
-        if (match == false) {
+        if (match === false) {
             return res.status(401).json({
                 success: false,
                 message: "Password incorrect."
@@ -61,7 +61,7 @@ router.post("/login", async (req, res) => {
         const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '8h' });
         res.cookie('token', token, {
             httpOnly: true,    // JavaScript cannot access this cookie
-            secure: false,     // set to true in production (requires HTTPS)
+            secure: process.env.NODE_ENV === 'production',     // set to true in production (requires HTTPS)
             maxAge: 8 * 60 * 60 * 1000  // 8 hours in milliseconds
         });
 

@@ -75,11 +75,34 @@ router.patch("/:id", authMiddleware, async (req, res) => {
         const { id } = req.params;
 
         // Query DB to update tickets by setting tickets to request status for the requested id.
-        const update = await pool.query(`UPDATE tickets SET status = $1 WHERE id = $2 RETURNING *`, [status, id])
+        const update = await pool.query(`UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`, [status, id])
         res.status(200).json({ 
             success: true, 
             tickets: update.rows[0], 
             message: "Database update successful."})
+    }
+
+    catch(error) {
+        console.log("ERROR: ", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error."
+        });
+    }
+});
+
+router.patch('/:id/quote', authMiddleware, async (req, res) =>{
+    try {
+        const { quote_amount } = req.body;
+        const { id } = req.params;
+
+        const update = await pool.query(`UPDATE tickets SET quote_amount = $1, updated_at = NOW() WHERE id = $2 RETURNING *`, [quote_amount, id]);
+
+        res.status(200).json({
+            success: true,
+            tickets: update.rows[0],
+            message: "Quote amount set."
+        });
     }
 
     catch(error) {

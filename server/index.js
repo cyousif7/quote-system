@@ -9,6 +9,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
+const cookieParser = require('cookie-parser');
 
 // Call the express method on app to give access to various methods within
 const app = express();
@@ -17,6 +18,8 @@ const app = express();
 
 // Parse incoming JSON bodies so req.body can work in routes
 app.use(express.json());
+
+app.use(cookieParser());
 
 // Controls which domains can call the API
 // In production, this will be locked to the frontend's domain only

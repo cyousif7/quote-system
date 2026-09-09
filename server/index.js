@@ -47,6 +47,14 @@ const authLimiter = rateLimit({
     message: { error: 'Too many requests, please try again later.' }
 })
 
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'Too many requests, please try again later.' }
+});
+
+app.use(globalLimiter);
+
 app.use('/api/tickets', ticketLimiter);
 
 app.use('/api/auth', authLimiter);

@@ -4,6 +4,7 @@ const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
+const sendQuoteEmail = require('../services/emailService');
 
 // Instantiate router construct
 const router = Router();
@@ -148,7 +149,39 @@ router.post('/:id/upload', authMiddleware, upload.single('pdf'), async (req, res
     };
 });
 
+router.post('/:id/send', authMiddleware, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const custInfo = await pool.query(`SELECT * FROM tickets WHERE id = $1`, [id]);
 
+        if (custInfo.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Error, ticket not found."
+            });
+        };
+
+        const { customer_name, customer_email, quote_amount, pdf_path } = custInfo.rows[0];
+
+        await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path);
+
+        const update = await pool.query(`UPDATE tickets SET status = 'sent', updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
+
+        res.status(200).json({
+            success: true,
+            tickets: update.rows[0],
+            message: "Ticket sent."
+        });
+    }
+
+    catch(error) {
+        console.log("ERROR: ", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error."
+        });
+    };
+});
 
 // Export router to any other files that may need it
 module.exports = router;

@@ -9,6 +9,9 @@ node_modules/
 # OS files
 .DS_Store
 
+# Uploads
+uploads/
+
 # Python
 __pycache__/
 *.pyc

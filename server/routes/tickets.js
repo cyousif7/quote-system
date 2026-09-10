@@ -3,6 +3,7 @@ const lookupVehicle = require("../services/vehicleLookup.js");
 const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/auth');
+const multer = require('multer');
 
 // Instantiate router construct
 const router = Router();
@@ -113,6 +114,41 @@ router.patch('/:id/quote', authMiddleware, async (req, res) =>{
         });
     }
 });
+
+const storageConfig = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
+
+const upload = multer({ storage: storageConfig });
+
+router.post('/:id/upload', authMiddleware, upload.single('pdf'), async (req, res) => {
+    try {
+        const filePath = req.file.path;
+        const { id } = req.params;
+        const update = await pool.query(`UPDATE tickets SET pdf_path = $1, updated_at = NOW() WHERE id = $2 RETURNING *`, [filePath, id]);
+
+        res.status(200).json({
+            success: true,
+            tickets: update.rows[0],
+            message: "PDF uploaded successfully."
+        });
+    }
+
+    catch(error) {
+        console.log("ERROR: ", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error."
+        });
+    };
+});
+
+
 
 // Export router to any other files that may need it
 module.exports = router;

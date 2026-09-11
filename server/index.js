@@ -19,7 +19,19 @@ const app = express();
 // Middleware
 
 // Use helmet to prevent security vulnerabilities
+// TODO: Configure helmet CSP after frontend is built
+// helmet CSP must whitelist frontend domain, fonts, and any CDN resources
 app.use(helmet())
+
+// Force HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.header('x-forwarded-proto') !== 'https') {
+            return res.redirect(`https://${req.header('host')}${req.url}`);
+        }
+        next();
+    });
+}
 
 // Parse incoming JSON bodies so req.body can work in routes
 // Only allow a size limit of 10kb to be imported in json body

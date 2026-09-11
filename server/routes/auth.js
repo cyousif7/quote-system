@@ -2,19 +2,30 @@ const { Router } = require("express");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require("../config/db");
+const { body, validationResult } = require('express-validator');
 
 
 // Instantiate router construct
 const router = Router();
 
-router.post("/setup", async (req, res) => {
+router.post("/setup", [
+    body('email').isEmail(),
+    body('password')
+        .isLength({ min: 8 })
+        .matches(/[A-Z]/)
+        .matches(/[0-9]/)
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
     try {
         const { email, password } = req.body;
         const countResult = await pool.query('SELECT COUNT(*) FROM users');
         const userCount = parseInt(countResult.rows[0].count);
 
         if (userCount > 0) {
-        return res.status(403).json({ success: false, message: 'Setup already complete.' });
+            return res.status(403).json({ success: false, message: 'Setup already complete.' });
         }
 
         const hash = await bcrypt.hash(password, 10);
@@ -62,7 +73,8 @@ router.post("/login", async (req, res) => {
         res.cookie('token', token, {
             httpOnly: true,    // JavaScript cannot access this cookie
             secure: process.env.NODE_ENV === 'production',     // set to true in production (requires HTTPS)
-            maxAge: 8 * 60 * 60 * 1000  // 8 hours in milliseconds
+            maxAge: 8 * 60 * 60 * 1000,  // 8 hours in milliseconds
+            sameSite: 'strict'
         });
 
         return res.status(200).json({

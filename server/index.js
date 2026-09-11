@@ -10,7 +10,6 @@ const rateLimit = require('express-rate-limit');
 const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
 const cookieParser = require('cookie-parser');
-const authMiddleware = require('./middleware/auth');
 const helmet = require('helmet');
 
 // Call the express method on app to give access to various methods within
@@ -22,7 +21,8 @@ const app = express();
 app.use(helmet())
 
 // Parse incoming JSON bodies so req.body can work in routes
-app.use(express.json());
+// Only allow a size limit of 10kb to be imported
+app.use(express.json({ limit: '10kb' }));
 
 app.use(cookieParser());
 

@@ -125,7 +125,17 @@ const storageConfig = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storageConfig });
+const upload = multer({ 
+    storage: storageConfig,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF files are allowed'), false);
+        }
+    },
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB max
+});
 
 router.post('/:id/upload', authMiddleware, upload.single('pdf'), async (req, res) => {
     try {

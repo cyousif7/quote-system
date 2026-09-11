@@ -4,6 +4,17 @@ const dotenv = require('dotenv');
 // Must be called before anything that needs environment variables
 dotenv.config();
 
+// Must come before using logger.error() in required
+const logger = require('./config/logger');
+
+const required = ['JWT_SECRET', 'DB_PASSWORD', 'DB_NAME', 'RESEND_API_KEY'];
+required.forEach(key => {
+    if (!process.env[key]) {
+        logger.error(`Missing required environment variable: ${key}`);
+        process.exit(1);
+    }
+});
+
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -11,7 +22,7 @@ const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
-const logger = require('./config/logger');
+const pool = require('./config/db');
 
 // Call the express method on app to give access to various methods within
 const app = express();
@@ -72,6 +83,10 @@ app.use('/api/tickets', ticketLimiter);
 
 app.use('/api/auth', authLimiter);
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/tickets', tickets);
 
 app.use('/api/auth', authRouter);
@@ -82,4 +97,10 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}.`);
+});
+
+process.on('SIGTERM', async () => {
+    logger.info('Server shutting down gracefully');
+    await pool.end();
+    process.exit(0);
 });

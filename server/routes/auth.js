@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(401).json({
                 success: false,
-                message: "User email not found"
+                message: "Invalid email or password."
             });
         };
 
@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
 
             return res.status(401).json({ 
                 success: false, 
-                message: "Password incorrect." 
+                message: "Invalid email or password." 
             });
         };
 

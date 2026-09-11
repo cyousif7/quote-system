@@ -8,7 +8,8 @@ const pool = new Pool({
     port: Number(process.env.DB_PORT),
     max: 10,     // max 10 connections in the db pool
     idleTimeoutMillis: 30000,        // close idle connections after 30 seconds
-    connectionTimeoutMillis: 2000       // fail fast if connection takes over 2 seconds
+    connectionTimeoutMillis: 2000,       // fail fast if connection takes over 2 seconds
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 module.exports = pool;

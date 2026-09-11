@@ -11,6 +11,7 @@ const tickets = require('./routes/tickets');
 const authRouter = require('./routes/auth.js');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
+const logger = require('./config/logger');
 
 // Call the express method on app to give access to various methods within
 const app = express();
@@ -21,7 +22,7 @@ const app = express();
 app.use(helmet())
 
 // Parse incoming JSON bodies so req.body can work in routes
-// Only allow a size limit of 10kb to be imported
+// Only allow a size limit of 10kb to be imported in json body
 app.use(express.json({ limit: '10kb' }));
 
 app.use(cookieParser());
@@ -68,5 +69,5 @@ app.use('/api/auth', authRouter);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}.`);
+    logger.info(`Server running on port ${PORT}.`);
 });

@@ -1,3 +1,5 @@
+const logger = require('../config/logger');
+
 async function lookupVehicle(vin) {
     try {
     // Call the NHTSA VIN API 
@@ -24,7 +26,7 @@ async function lookupVehicle(vin) {
     }
 
     catch(error) {
-        console.log("API call failed.");
+        logger.error(error.message);
 
         return null;
     }

@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const sendQuoteEmail = require('../services/emailService');
+const logger = require('../config/logger');
 
 // Instantiate router construct
 const router = Router();
@@ -42,7 +43,7 @@ router.post("/", [
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({ 
             success: false, 
             message: "Server error."});
@@ -63,7 +64,7 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({ 
             success: false, 
             message: "Server error."});
@@ -85,7 +86,7 @@ router.patch("/:id", authMiddleware, async (req, res) => {
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."
@@ -108,7 +109,7 @@ router.patch('/:id/quote', authMiddleware, async (req, res) =>{
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."
@@ -151,7 +152,7 @@ router.post('/:id/upload', authMiddleware, upload.single('pdf'), async (req, res
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."
@@ -185,7 +186,7 @@ router.post('/:id/send', authMiddleware, async (req, res) => {
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."

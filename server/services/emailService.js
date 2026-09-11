@@ -1,6 +1,7 @@
 const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../config/logger');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,7 +25,7 @@ async function sendQuoteEmail(customerName, customerEmail, quoteAmount, pdfPath)
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         throw error;
     };
 };

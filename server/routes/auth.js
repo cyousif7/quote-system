@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
-
+const logger = require('../config/logger');
 
 // Instantiate router construct
 const router = Router();
@@ -38,7 +38,7 @@ router.post("/setup", [
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."
@@ -49,7 +49,7 @@ router.post("/setup", [
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        
         const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
         if (result.rows.length === 0) {
             return res.status(401).json({
@@ -58,15 +58,35 @@ router.post("/login", async (req, res) => {
             });
         };
 
+        // Limit login attempts after too many failed attempts
+        const user = result.rows[0];
+
+        if (user.locked_until && new Date(user.locked_until) > new Date()) {
+            return res.status(429).json({
+                success: false,
+                message: "Account temporarily locked. Try again in 15 minutes."
+            });
+        };        
+
         const hash = result.rows[0].password_hash;
         const match = await bcrypt.compare(password, hash);
 
-        if (match === false) {
-            return res.status(401).json({
-                success: false,
-                message: "Password incorrect."
+        if (!match) {
+            await pool.query(`
+                UPDATE users SET 
+                failed_attempts = failed_attempts + 1,
+                locked_until = CASE WHEN failed_attempts + 1 >= 7 
+                THEN NOW() + INTERVAL '15 minutes' 
+                ELSE NULL END
+                WHERE email = $1`, [email]);
+
+            return res.status(401).json({ 
+                success: false, 
+                message: "Password incorrect." 
             });
         };
+
+        await pool.query(`UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE email = $1`, [email]);
 
         // generate JWT
         const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '8h' });
@@ -85,7 +105,7 @@ router.post("/login", async (req, res) => {
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(500).json({
             success: false,
             message: "Server error."

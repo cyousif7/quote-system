@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const logger = require('../config/logger');
 
 function authMiddleware(req, res, next) {
     try {
@@ -18,7 +19,7 @@ function authMiddleware(req, res, next) {
     }
 
     catch(error) {
-        console.log("ERROR: ", error.message);
+        logger.error(error.message);
         res.status(401).json({
             success: false,
             message: "Authentication error."

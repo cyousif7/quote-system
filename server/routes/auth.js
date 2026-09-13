@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
 const logger = require('../config/logger');
+const authMiddleware = require('../middleware/auth');
 
 // Instantiate router construct
 const router = Router();
@@ -111,6 +112,13 @@ router.post("/login", async (req, res) => {
             message: "Server error."
         });
     };
+});
+
+router.get('/me', authMiddleware, (req, res) => {
+    res.status(200).json({
+        success: true,
+        user: req.user
+    });
 });
 
 router.post("/logout", (req, res) => {

@@ -172,9 +172,9 @@ router.post('/:id/send', authMiddleware, async (req, res) => {
             });
         };
 
-        const { customer_name, customer_email, quote_amount, pdf_path } = custInfo.rows[0];
+        const { customer_name, customer_email, quote_amount, pdf_path, token } = custInfo.rows[0];
 
-        await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path);
+        await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path, token);
 
         const update = await pool.query(`UPDATE tickets SET status = 'sent', updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
 
@@ -182,6 +182,35 @@ router.post('/:id/send', authMiddleware, async (req, res) => {
             success: true,
             tickets: update.rows[0],
             message: "Ticket sent."
+        });
+    }
+
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error."
+        });
+    };
+});
+
+router.get('/:token/status', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const result = await pool.query(`SELECT * FROM public_ticket_status WHERE token = $1`, [token]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Error, token not found."
+            });
+        };
+
+        res.status(200).json({
+            success: true,
+            tickets: result.rows[0],
+            message: "Ticket retrieved successfully."
         });
     }
 

@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core'
 import TicketCard from './TicketCard'
 
-function KanbanColumn({ title, status, tickets }) {
+function KanbanColumn({ title, status, tickets, onTicketClick }) {
     // id must match the status string — 'new', 'in_progress', 'sent'
     // dnd-kit uses this id to tell you which column something was dropped into
     const { setNodeRef, isOver } = useDroppable({
@@ -21,7 +21,7 @@ function KanbanColumn({ title, status, tickets }) {
         <div ref={setNodeRef} style={style}>
             <h2>{title}</h2>
             {tickets.map(ticket => (
-                <TicketCard key={ticket.id} ticket={ticket} />
+                <TicketCard key={ticket.id} ticket={ticket} onClick={() => onTicketClick(ticket)} />
             ))}
         </div>
     )

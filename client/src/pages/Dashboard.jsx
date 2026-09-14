@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { DndContext } from '@dnd-kit/core'
+import KanbanColumn from '../components/KanbanColumn'
 
 function Dashboard() {
     const [tickets, setTickets] = useState([])
@@ -23,41 +25,39 @@ function Dashboard() {
 
     const newTickets = tickets.filter(t => t.status === 'new')
     const inProgressTickets = tickets.filter(t => t.status === 'in_progress')
-    const sentTickets = tickets.filter(t => t.status === 'sent')    
+    const sentTickets = tickets.filter(t => t.status === 'sent')
+
+    const handleDragEnd = async (event) => {
+        const { active, over } = event
+
+        // if dropped outside a column, do nothing
+        if (!over) return
+
+        const ticketId = active.id
+        const newStatus = over.id
+
+        // update backend
+        await axios.patch(`http://localhost:3000/api/tickets/${ticketId}`, 
+            { status: newStatus }, 
+            { withCredentials: true }
+        )
+
+        // update local state instantly so UI reflects change without refetching
+        setTickets(tickets.map(t => 
+            t.id === ticketId ? { ...t, status: newStatus } : t
+        ))
+    }
 
     return (
-        <div style={{ display: 'flex', gap: '20px' }}>
-            <div>
-                <h2>New</h2>
-                {newTickets.map(ticket => (
-                    <div key={ticket.id}>
-                        <p>{ticket.customer_name}</p>
-                        <p>{ticket.problem_description}</p>
-                    </div>
-                ))}
+        <DndContext onDragEnd={handleDragEnd}>
+            <div style={{ display: 'flex', gap: '20px' }}>
+                <KanbanColumn title="New" status="new" tickets={newTickets} />
+                <KanbanColumn title="In Progress" status="in_progress" tickets={inProgressTickets} />
+                <KanbanColumn title="Sent" status="sent" tickets={sentTickets} />
             </div>
-
-            <div>
-                <h2>In Progress</h2>
-                {inProgressTickets.map(ticket => (
-                    <div key={ticket.id}>
-                        <p>{ticket.customer_name}</p>
-                        <p>{ticket.problem_description}</p>
-                    </div>
-                ))}
-            </div>
-
-            <div>
-                <h2>Sent</h2>
-                {sentTickets.map(ticket => (
-                    <div key={ticket.id}>
-                        <p>{ticket.customer_name}</p>
-                        <p>{ticket.problem_description}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
+        </DndContext>
     )
+
 }
 
 export default Dashboard

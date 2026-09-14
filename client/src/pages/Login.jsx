@@ -3,17 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 function Login() {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
-    const navigate = useNavigate()
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault()  // stops the page from refreshing on form submit
         try {
             // call POST /api/auth/login with email and password
-            const response = await axios.post('http://localhost:3000/api/auth/login', { email, password }, { withCredentials: true })
-
+            const response = await axios.post('http://localhost:3000/api/auth/login', { email, password }, { withCredentials: true });
 
             // on success navigate to /dashboard
             navigate('/dashboard');
@@ -40,7 +40,7 @@ function Login() {
             <button type="submit">Login</button>
             {error && <p>{error}</p>}
         </form>
-    )
-}
+    );
+};
 
 export default Login;

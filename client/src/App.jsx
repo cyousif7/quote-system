@@ -3,6 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import QuoteForm from './pages/QuoteForm'
 import QuoteStatus from './pages/QuoteStatus'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <Route path="/quote/:token" element={<QuoteStatus />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <div>Dashboard</div>
+          <Dashboard />
         </ProtectedRoute>
       } />
     </Routes>

@@ -3,11 +3,14 @@ import axios from 'axios'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import KanbanColumn from '../components/KanbanColumn'
 import TicketModal from '../components/TicketModal'
+import { useAuth } from '../context/AuthContext'
 
 function Dashboard() {
     const [tickets, setTickets] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedTicket, setSelectedTicket] = useState(null)
+
+    const { logout } = useAuth()
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -65,6 +68,7 @@ function Dashboard() {
 
     return (
         <>
+            <button onClick={logout}>Logout</button>
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <KanbanColumn title="New" status="new" tickets={newTickets} onTicketClick={setSelectedTicket} />

@@ -8,10 +8,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 async function sendQuoteEmail(customerName, customerEmail, quoteAmount, pdfPath, token) {
     try {
         const emailOptions = {
-            from: 'Your Shop <onboarding@resend.dev>',
+            from: `${process.env.SHOP_NAME || 'Your Shop'} <onboarding@resend.dev>`,
             to: customerEmail,
             subject: 'Your Quote is Ready',
-            html: `<p>Hello ${customerName}, </p><p>Your quote has been prepared. The total is $${quoteAmount}. Here are all the details of your quote: ${process.env.CLIENT_URL}/quote/${token}.</p>`,
+            html: `<p>Hello ${customerName},</p><p>Thank you for reaching out to ${process.env.SHOP_NAME || 'us'}. Your quote has been prepared — the total comes to $${quoteAmount}. You can view the full details and track your quote anytime here: ${process.env.CLIENT_URL}/quote/${token}.</p>`,
         }
 
         // only attach PDF if one exists

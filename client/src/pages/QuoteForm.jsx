@@ -12,6 +12,8 @@ function QuoteForm() {
     const [loading, setLoading] = useState(false);
     const [submittedToken, setSubmittedToken] = useState(null);
 
+    const shopName = import.meta.env.VITE_SHOP_NAME || 'Your Shop'
+
     const handleSubmit = async (e) => {
         e.preventDefault()  // stops the page from refreshing on form submit
         setLoading(true);
@@ -41,52 +43,157 @@ function QuoteForm() {
 
     if (submittedToken) {
         return (
-            <div>
-                <h2>Request Submitted!</h2>
-                <p>Track your quote status here:</p>
-                <a href={`/quote/${submittedToken}`}>View Quote Status</a>
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#F0F4FA'
+            }}>
+                <div style={{
+                    backgroundColor: '#FFFFFF',
+                    padding: '48px',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 24px rgba(27, 58, 107, 0.1)',
+                    width: '100%',
+                    maxWidth: '480px',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
+                    <h2 style={{ color: '#1B3A6B', fontSize: '22px', fontWeight: '700', marginBottom: '12px' }}>
+                        Request Submitted
+                    </h2>
+                    <p style={{ color: '#4A4A5A', marginBottom: '24px' }}>
+                        We've received your quote request and will be in touch shortly.
+                    </p>
+                    <a
+                        href={`/quote/${submittedToken}`}
+                        style={{
+                            display: 'inline-block',
+                            padding: '12px 24px',
+                            backgroundColor: '#1B3A6B',
+                            color: '#FFFFFF',
+                            borderRadius: '8px',
+                            fontWeight: '600',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        Track Your Quote
+                    </a>
+                </div>
             </div>
         )
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Name"
-            />
-            <input
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="Email"
-            />
-            <input
-                type="text"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="Phone Number"
-            />
-            <input
-                type="text"
-                value={vin}
-                onChange={(e) => setVin(e.target.value)}
-                placeholder="VIN"
-            />
-            <input
-                type="text"
-                value={problemDescription}
-                onChange={(e) => setProblemDescription(e.target.value)}
-                placeholder="Problem Description"
-            />
-            <button type="submit" disabled = {loading}>
-                {loading ? 'Submitting...' : 'Get a Quote'}
-            </button>
-            {error && <p>{error}</p>}
-        </form>
-    );
+        <div style={{
+            minHeight: '100vh',
+            backgroundColor: '#F0F4FA',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px'
+        }}>
+            <div style={{
+                backgroundColor: '#FFFFFF',
+                padding: '48px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 24px rgba(27, 58, 107, 0.1)',
+                width: '100%',
+                maxWidth: '520px'
+            }}>
+                <div style={{ marginBottom: '32px' }}>
+                    <h1 style={{ color: '#1B3A6B', fontSize: '24px', fontWeight: '700' }}>
+                        {shopName}
+                    </h1>
+                    <p style={{ color: '#4A4A5A', marginTop: '8px', fontSize: '15px' }}>
+                        Request a quote — no phone call needed.
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    {[
+                        { label: 'Full Name', type: 'text', value: customerName, onChange: setCustomerName, placeholder: 'John Smith' },
+                        { label: 'Email Address', type: 'email', value: customerEmail, onChange: setCustomerEmail, placeholder: 'john@example.com' },
+                        { label: 'Phone Number', type: 'text', value: customerPhone, onChange: setCustomerPhone, placeholder: '555-123-4567' },
+                        { label: 'Vehicle VIN', type: 'text', value: vin, onChange: setVin, placeholder: '17-character VIN' },
+                    ].map(({ label, type, value, onChange, placeholder }) => (
+                        <div key={label} style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
+                                {label}
+                            </label>
+                            <input
+                                type={type}
+                                value={value}
+                                onChange={e => onChange(e.target.value)}
+                                placeholder={placeholder}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1.5px solid #E8ECF4',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                    ))}
+
+                    <div style={{ marginBottom: '24px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
+                            What do you need a quote for?
+                        </label>
+                        <textarea
+                            value={problemDescription}
+                            onChange={e => setProblemDescription(e.target.value)}
+                            placeholder="Describe the issue with your vehicle..."
+                            rows={4}
+                            style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '1.5px solid #E8ECF4',
+                                borderRadius: '8px',
+                                fontSize: '15px',
+                                outline: 'none',
+                                resize: 'vertical'
+                            }}
+                        />
+                    </div>
+
+                    {error && (
+                        <p style={{
+                            color: '#C0392B',
+                            backgroundColor: '#FDF0EF',
+                            padding: '10px 14px',
+                            borderRadius: '6px',
+                            marginBottom: '16px',
+                            fontSize: '14px'
+                        }}>
+                            {error}
+                        </p>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                            width: '100%',
+                            padding: '13px',
+                            backgroundColor: loading ? '#8FA8C8' : '#1B3A6B',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            cursor: loading ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {loading ? 'Submitting...' : 'Request a Quote'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    )
 };
 
 export default QuoteForm;

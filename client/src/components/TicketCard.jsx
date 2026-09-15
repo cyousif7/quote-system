@@ -1,6 +1,12 @@
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 
+const statusColors = {
+    new: '#2E5BA8',
+    in_progress: '#D4A017',
+    sent: '#2E9E5B'
+}
+
 function TicketCard({ ticket, onClick }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: ticket.id
@@ -10,21 +16,44 @@ function TicketCard({ ticket, onClick }) {
         transform: CSS.Translate.toString(transform),
         cursor: isDragging ? 'grabbing' : 'grab',
         opacity: isDragging ? 0.5 : 1,
-        backgroundColor: 'white',
-        padding: '10px',
-        marginBottom: '8px',
-        borderRadius: '4px',
-        border: '1px solid #ddd'
+        backgroundColor: '#FFFFFF',
+        padding: '16px',
+        marginBottom: '12px',
+        borderRadius: '8px',
+        border: '1px solid #E8ECF4',
+        borderLeft: `4px solid ${statusColors[ticket.status] || '#2E5BA8'}`,
+        boxShadow: '0 1px 3px rgba(27, 58, 107, 0.06)'
     }
 
     return (
         <div ref={setNodeRef} style={style} {...attributes}>
             <div {...listeners}>
-                <p><strong>{ticket.customer_name}</strong></p>
-                <p>{ticket.vehicle_year} {ticket.vehicle_make} {ticket.vehicle_model}</p>
-                <p>{ticket.problem_description}</p>
+                <p style={{ fontWeight: '600', color: '#1B3A6B', marginBottom: '4px', fontSize: '15px' }}>
+                    {ticket.customer_name}
+                </p>
+                <p style={{ color: '#4A4A5A', fontSize: '13px', marginBottom: '6px' }}>
+                    {ticket.vehicle_year} {ticket.vehicle_make} {ticket.vehicle_model}
+                </p>
+                <p style={{ color: '#4A4A5A', fontSize: '13px', marginBottom: '10px' }}>
+                    {ticket.problem_description}
+                </p>
             </div>
-            <button onClick={onClick}>View Details</button>
+            <button
+                onClick={onClick}
+                style={{
+                    width: '100%',
+                    padding: '8px',
+                    backgroundColor: '#F0F4FA',
+                    color: '#1B3A6B',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                }}
+            >
+                View Details
+            </button>
         </div>
     )
 }

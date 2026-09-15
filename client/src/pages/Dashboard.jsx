@@ -10,12 +10,14 @@ function Dashboard() {
     const [loading, setLoading] = useState(true)
     const [selectedTicket, setSelectedTicket] = useState(null)
 
+    const shopName = import.meta.env.VITE_SHOP_NAME || 'Your Shop'
+
     const { logout } = useAuth()
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8  // must drag 8px before it counts as a drag
+                distance: 8
             }
         })
     )
@@ -34,29 +36,23 @@ function Dashboard() {
         fetchTickets()
     }, [])
 
-    if (loading) return <div>Loading...</div>
-
     const newTickets = tickets.filter(t => t.status === 'new')
     const inProgressTickets = tickets.filter(t => t.status === 'in_progress')
     const sentTickets = tickets.filter(t => t.status === 'sent')
 
     const handleDragEnd = async (event) => {
         const { active, over } = event
-
-        // if dropped outside a column, do nothing
         if (!over) return
 
         const ticketId = active.id
         const newStatus = over.id
 
-        // update backend
-        await axios.patch(`http://localhost:3000/api/tickets/${ticketId}`, 
-            { status: newStatus }, 
+        await axios.patch(`http://localhost:3000/api/tickets/${ticketId}`,
+            { status: newStatus },
             { withCredentials: true }
         )
 
-        // update local state instantly so UI reflects change without refetching
-        setTickets(tickets.map(t => 
+        setTickets(tickets.map(t =>
             t.id === ticketId ? { ...t, status: newStatus } : t
         ))
     }
@@ -64,18 +60,60 @@ function Dashboard() {
     const refreshTickets = async () => {
         const response = await axios.get('http://localhost:3000/api/tickets', { withCredentials: true })
         setTickets(response.data.tickets)
+
+        if (selectedTicket) {
+            const updated = response.data.tickets.find(t => t.id === selectedTicket.id)
+            if (updated) setSelectedTicket(updated)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div style={{ minHeight: '100vh', backgroundColor: '#F0F4FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <p style={{ color: '#4A4A5A' }}>Loading tickets...</p>
+            </div>
+        )
     }
 
     return (
-        <>
-            <button onClick={logout}>Logout</button>
-            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    <KanbanColumn title="New" status="new" tickets={newTickets} onTicketClick={setSelectedTicket} />
-                    <KanbanColumn title="In Progress" status="in_progress" tickets={inProgressTickets} onTicketClick={setSelectedTicket} />
-                    <KanbanColumn title="Sent" status="sent" tickets={sentTickets} onTicketClick={setSelectedTicket} />
-                </div>
-            </DndContext>
+        <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
+            <div style={{
+                backgroundColor: '#1B3A6B',
+                padding: '20px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+            }}>
+                <h1 style={{ color: '#FFFFFF', fontSize: '20px', fontWeight: '700' }}>
+                    {shopName}
+                </h1>
+                <button
+                    onClick={logout}
+                    style={{
+                        padding: '9px 18px',
+                        backgroundColor: 'transparent',
+                        color: '#FFFFFF',
+                        border: '1.5px solid rgba(255,255,255,0.4)',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Log Out
+                </button>
+            </div>
+
+            <div style={{ padding: '32px' }}>
+                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                        <KanbanColumn title="New" status="new" tickets={newTickets} onTicketClick={setSelectedTicket} />
+                        <KanbanColumn title="In Progress" status="in_progress" tickets={inProgressTickets} onTicketClick={setSelectedTicket} />
+                        <KanbanColumn title="Sent" status="sent" tickets={sentTickets} onTicketClick={setSelectedTicket} />
+                    </div>
+                </DndContext>
+            </div>
+
             {selectedTicket && (
                 <TicketModal
                     ticket={selectedTicket}
@@ -83,9 +121,8 @@ function Dashboard() {
                     onUpdate={refreshTickets}
                 />
             )}
-        </>
+        </div>
     )
-
 }
 
 export default Dashboard

@@ -16,7 +16,7 @@ function Setup() {
         e.preventDefault()
         setLoading(true)
         try {
-            await axios.post('http://localhost:3000/api/auth/setup', { email, password }, { withCredentials: true })
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/setup`, { email, password }, { withCredentials: true })
             navigate('/login')
         } catch(error) {
             const errors = error.response?.data?.errors

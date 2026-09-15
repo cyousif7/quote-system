@@ -7,13 +7,16 @@ function QuoteStatus() {
     const [ticket, setTicket] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [responseText, setResponseText] = useState('')
+    const [responseSubmitted, setResponseSubmitted] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
 
     const shopName = import.meta.env.VITE_SHOP_NAME || 'Your Shop'
 
     useEffect(() => {
         const fetchTicket = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/tickets/${token}/status`)
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets/${token}/status`)
                 setTicket(response.data.tickets)
             } catch {
                 setError('We couldn\'t find a quote with this link.')
@@ -65,7 +68,22 @@ function QuoteStatus() {
     const statusConfig = {
         new: { label: 'Received', color: '#2E5BA8', bg: '#EAF0FA' },
         in_progress: { label: 'In Progress', color: '#B7791F', bg: '#FDF3E3' },
+        needs_info: { label: 'Action Needed', color: '#C0392B', bg: '#FDEAEA' },
         sent: { label: 'Quote Ready', color: '#1E7A4A', bg: '#E6F5EC' }
+    }
+
+    const submitResponse = async () => {
+        setSubmitting(true)
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${token}/respond`,
+                { customer_response: responseText }
+            )
+            setResponseSubmitted(true)
+        } catch {
+            setError('Failed to submit your response. Please try again.')
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     const currentStatus = statusConfig[ticket.status] || statusConfig.new
@@ -101,7 +119,6 @@ function QuoteStatus() {
                         <DetailRow label="Quote Amount" value={`$${ticket.quote_amount}`} highlight />
                     )}
                 </div>
-
                 {ticket.status === 'new' && (
                     <p style={{ marginTop: '24px', color: '#4A4A5A', fontSize: '14px' }}>
                         We've received your request and will follow up with a quote shortly.
@@ -115,6 +132,54 @@ function QuoteStatus() {
                 {ticket.status === 'sent' && (
                     <p style={{ marginTop: '24px', color: '#4A4A5A', fontSize: '14px' }}>
                         Check your email for the full quote details.
+                    </p>
+                )}
+                {ticket.status === 'needs_info' && !responseSubmitted && (
+                    <div style={{ marginTop: '24px' }}>
+                        {ticket.worker_message && (
+                            <div style={{ borderLeft: '3px solid #C0392B', paddingLeft: '16px', marginBottom: '16px' }}>
+                                <p style={{ margin: 0, color: '#4A4A5A', fontSize: '13px', fontWeight: '600' }}>We need more information</p>
+                                <p style={{ margin: '6px 0 0 0', color: '#4A4A5A', fontSize: '14px', lineHeight: '1.5' }}>{ticket.worker_message}</p>
+                            </div>
+                        )}
+                        <textarea
+                            value={responseText}
+                            onChange={e => setResponseText(e.target.value)}
+                            placeholder="Type your response here..."
+                            rows={4}
+                            style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '1.5px solid #E8ECF4',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none',
+                                resize: 'vertical',
+                                marginBottom: '12px'
+                            }}
+                        />
+                        <button
+                            onClick={submitResponse}
+                            disabled={submitting || !responseText.trim()}
+                            style={{
+                                width: '100%',
+                                padding: '13px',
+                                backgroundColor: submitting || !responseText.trim() ? '#8FA8C8' : '#1B3A6B',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                cursor: submitting || !responseText.trim() ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {submitting ? 'Submitting...' : 'Submit Response'}
+                        </button>
+                    </div>
+                )}
+                {ticket.status === 'needs_info' && responseSubmitted && (
+                    <p style={{ marginTop: '24px', color: '#1E7A4A', fontSize: '14px', fontWeight: '600' }}>
+                        Thank you! Your response has been submitted.
                     </p>
                 )}
             </div>

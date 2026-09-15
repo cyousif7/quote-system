@@ -25,7 +25,7 @@ function Dashboard() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/tickets', { withCredentials: true })
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, { withCredentials: true })
                 setTickets(response.data.tickets)
             } catch {
                 // handle error
@@ -38,6 +38,7 @@ function Dashboard() {
 
     const newTickets = tickets.filter(t => t.status === 'new')
     const inProgressTickets = tickets.filter(t => t.status === 'in_progress')
+    const needsInfoTickets = tickets.filter(t => t.status === 'needs_info')
     const sentTickets = tickets.filter(t => t.status === 'sent')
 
     const handleDragEnd = async (event) => {
@@ -47,7 +48,7 @@ function Dashboard() {
         const ticketId = active.id
         const newStatus = over.id
 
-        await axios.patch(`http://localhost:3000/api/tickets/${ticketId}`,
+        await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticketId}`,
             { status: newStatus },
             { withCredentials: true }
         )
@@ -58,7 +59,7 @@ function Dashboard() {
     }
 
     const refreshTickets = async () => {
-        const response = await axios.get('http://localhost:3000/api/tickets', { withCredentials: true })
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/tickets`, { withCredentials: true })
         setTickets(response.data.tickets)
 
         if (selectedTicket) {
@@ -109,6 +110,7 @@ function Dashboard() {
                     <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                         <KanbanColumn title="New" status="new" tickets={newTickets} onTicketClick={setSelectedTicket} />
                         <KanbanColumn title="In Progress" status="in_progress" tickets={inProgressTickets} onTicketClick={setSelectedTicket} />
+                        <KanbanColumn title="Needs Info" status="needs_info" tickets={needsInfoTickets} onTicketClick={setSelectedTicket} />
                         <KanbanColumn title="Sent" status="sent" tickets={sentTickets} onTicketClick={setSelectedTicket} />
                     </div>
                 </DndContext>

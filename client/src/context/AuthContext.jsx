@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
         const checkAuth = async () => {
             try {
                 // call /api/auth/me to check if logged in
-                const response = await axios.get('http://localhost:3000/api/auth/me', { withCredentials: true });
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, { withCredentials: true });
 
                 // if success, setUser(data.user)
                 setUser(response.data.user);
@@ -34,14 +34,14 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = async (email, password) => {
-        await axios.post('http://localhost:3000/api/auth/login', { email, password }, { withCredentials: true })
-        const response = await axios.get('http://localhost:3000/api/auth/me', { withCredentials: true })
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password }, { withCredentials: true })
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, { withCredentials: true })
         setUser(response.data.user)
     }
 
     const logout = async () => {
         // call POST /api/auth/logout
-        const response = await axios.post('http://localhost:3000/api/auth/logout', {}, { withCredentials: true })
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true })
 
         // then setUser(null)
         setUser(null);

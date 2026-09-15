@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
-const sendQuoteEmail = require('../services/emailService');
+const { sendQuoteEmail, notifyShopOfResponse, sendInfoRequestEmail } = require('../services/emailService');
 const logger = require('../config/logger');
 
 // Instantiate router construct
@@ -73,12 +73,16 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.patch("/:id", authMiddleware, async (req, res) => {
     try {
-        // destructure (pull "status" and "id" out so that we can just write "status" or "id" instead of req.body.status or req.params.id)
         const { status } = req.body;
         const { id } = req.params;
 
-        // Query DB to update tickets by setting tickets to request status for the requested id.
         const update = await pool.query(`UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`, [status, id])
+
+        if (status === 'needs_info') {
+            const { customer_name, customer_email, worker_message, token } = update.rows[0];
+            await sendInfoRequestEmail(customer_name, customer_email, worker_message, token);
+        }
+
         res.status(200).json({ 
             success: true, 
             tickets: update.rows[0], 
@@ -243,6 +247,44 @@ router.get('/:token/status', async (req, res) => {
             message: "Server error."
         });
     };
+});
+
+router.patch('/:token/respond', [
+    body('customer_response').notEmpty().isLength({ max: 2000 })
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    try {
+        const { customer_response } = req.body;
+        const { token } = req.params;
+
+        const update = await pool.query(
+            `UPDATE tickets SET customer_response = $1, status = 'in_progress', updated_at = NOW() WHERE token = $2 RETURNING *`,
+            [customer_response, token]
+        );
+
+        if (update.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found."
+            });
+        }
+
+        const { customer_name, id } = update.rows[0];
+        await notifyShopOfResponse(customer_name, customer_response, id);
+
+        res.status(200).json({
+            success: true,
+            message: "Response submitted."
+        });
+    }
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
 });
 
 // Export router to any other files that may need it

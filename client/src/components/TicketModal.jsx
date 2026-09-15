@@ -11,7 +11,7 @@ function TicketModal({ ticket, onClose, onUpdate }) {
     const saveQuote = async () => {
         setSaving(true)
         try {
-            await axios.patch(`http://localhost:3000/api/tickets/${ticket.id}/quote`,
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/quote`,
                 { quote_amount: quoteAmount },
                 { withCredentials: true }
             )
@@ -27,7 +27,7 @@ function TicketModal({ ticket, onClose, onUpdate }) {
     const saveMessage = async () => {
         setSaving(true)
         try {
-            await axios.patch(`http://localhost:3000/api/tickets/${ticket.id}/message`,
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/message`,
                 { worker_message: workerMessage },
                 { withCredentials: true }
             )
@@ -40,13 +40,33 @@ function TicketModal({ ticket, onClose, onUpdate }) {
         }
     }
 
+    const requestMoreInfo = async () => {
+        setSaving(true)
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/message`,
+                { worker_message: workerMessage },
+                { withCredentials: true }
+            )
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}`,
+                { status: 'needs_info' },
+                { withCredentials: true }
+            )
+            setMessage('Customer notified — request sent.')
+            onUpdate()
+        } catch {
+            setMessage('Failed to send request.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
     const uploadPdf = async () => {
         if (!pdfFile) return
         setSaving(true)
         const formData = new FormData()
         formData.append('pdf', pdfFile)
         try {
-            await axios.post(`http://localhost:3000/api/tickets/${ticket.id}/upload`,
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/upload`,
                 formData,
                 { withCredentials: true }
             )
@@ -69,7 +89,7 @@ function TicketModal({ ticket, onClose, onUpdate }) {
 
         setSaving(true)
         try {
-            await axios.post(`http://localhost:3000/api/tickets/${ticket.id}/send`,
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/send`,
                 {},
                 { withCredentials: true }
             )
@@ -114,6 +134,9 @@ function TicketModal({ ticket, onClose, onUpdate }) {
                     <DetailLine label="Vehicle" value={`${ticket.vehicle_year || ''} ${ticket.vehicle_make || ''} ${ticket.vehicle_model || ''} ${ticket.vehicle_trim || ''}`.trim() || 'Not decoded'} />
                     <DetailLine label="Problem" value={ticket.problem_description} />
                     <DetailLine label="Status" value={ticket.status} />
+                    {ticket.customer_response && (
+                        <DetailLine label="Customer Reply" value={ticket.customer_response} />
+                    )}
                 </div>
 
                 <div style={sectionStyle}>
@@ -159,6 +182,26 @@ function TicketModal({ ticket, onClose, onUpdate }) {
                             Upload
                         </button>
                     </div>
+                </div>
+
+                <div style={sectionStyle}>
+                    <button
+                        onClick={requestMoreInfo}
+                        disabled={saving}
+                        style={{
+                            width: '100%',
+                            padding: '11px',
+                            backgroundColor: 'transparent',
+                            color: '#B7791F',
+                            border: '1.5px solid #B7791F',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: saving ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Request More Info from Customer
+                    </button>
                 </div>
 
                 <div>

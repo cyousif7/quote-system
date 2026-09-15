@@ -71,4 +71,82 @@ async function sendQuoteEmail(customerName, customerEmail, quoteAmount, pdfPath,
     };
 };
 
-module.exports = sendQuoteEmail;
+async function notifyShopOfResponse(customerName, customerResponse, ticketId) {
+    try {
+        const shopName = process.env.SHOP_NAME || 'Your Shop';
+
+        const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; background-color: #F0F4FA; padding: 32px;">
+            <div style="background-color: #FFFFFF; border-radius: 12px; padding: 40px; box-shadow: 0 4px 24px rgba(27, 58, 107, 0.1);">
+                <h1 style="color: #1B3A6B; font-size: 20px; margin: 0 0 16px 0;">New Customer Response</h1>
+                <p style="color: #4A4A5A; font-size: 15px; line-height: 1.6;">
+                    ${customerName} has responded to their quote request:
+                </p>
+                <div style="background-color: #F0F4FA; border-radius: 8px; padding: 16px; margin: 16px 0;">
+                    <p style="margin: 0; color: #1B3A6B; font-size: 14px; line-height: 1.5;">${customerResponse}</p>
+                </div>
+                <a href="${process.env.CLIENT_URL}/dashboard" style="display: inline-block; margin-top: 8px; padding: 12px 20px; background-color: #1B3A6B; color: #FFFFFF; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                    View in Dashboard
+                </a>
+            </div>
+        </div>
+        `;
+
+        await resend.emails.send({
+            from: `${shopName} <onboarding@resend.dev>`,
+            to: process.env.SHOP_NOTIFICATION_EMAIL,
+            subject: `${customerName} responded to their quote`,
+            html
+        });
+    }
+    catch(error) {
+        logger.error(error.message);
+        // don't throw - a failed notification shouldn't block the customer's response from saving
+    }
+};
+
+async function sendInfoRequestEmail(customerName, customerEmail, workerMessage, token) {
+    try {
+        const shopName = process.env.SHOP_NAME || 'Your Shop';
+        const statusUrl = `${process.env.CLIENT_URL}/quote/${token}`;
+
+        const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; background-color: #F0F4FA; padding: 32px;">
+            <div style="background-color: #FFFFFF; border-radius: 12px; padding: 40px; box-shadow: 0 4px 24px rgba(27, 58, 107, 0.1);">
+                <h1 style="color: #1B3A6B; font-size: 22px; margin: 0 0 8px 0;">${shopName}</h1>
+                <p style="color: #4A4A5A; font-size: 15px; margin: 0 0 24px 0;">We Need More Information</p>
+
+                <p style="color: #4A4A5A; font-size: 15px; line-height: 1.6;">
+                    Hello ${customerName},
+                </p>
+                <p style="color: #4A4A5A; font-size: 15px; line-height: 1.6;">
+                    Before we can finalize your quote, we need a bit more information from you:
+                </p>
+
+                ${workerMessage ? `
+                <div style="border-left: 3px solid #C0392B; padding-left: 16px; margin: 20px 0;">
+                    <p style="margin: 0; color: #4A4A5A; font-size: 14px; line-height: 1.5;">${workerMessage}</p>
+                </div>
+                ` : ''}
+
+                <a href="${statusUrl}" style="display: inline-block; margin-top: 16px; padding: 13px 24px; background-color: #1B3A6B; color: #FFFFFF; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px;">
+                    Respond Now
+                </a>
+            </div>
+        </div>
+        `;
+
+        await resend.emails.send({
+            from: `${shopName} <onboarding@resend.dev>`,
+            to: customerEmail,
+            subject: `${shopName} needs more information`,
+            html
+        });
+    }
+    catch(error) {
+        logger.error(error.message);
+        throw error;
+    };
+};
+
+module.exports = { sendQuoteEmail, notifyShopOfResponse, sendInfoRequestEmail };

@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 const statusColors = {
     new: '#2E5BA8',
     in_progress: '#D4A017',
+    needs_info: '#C0392B',
     sent: '#2E9E5B'
 }
 

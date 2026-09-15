@@ -20,7 +20,7 @@ function QuoteForm() {
         
         try {
             // call POST /api/tickets with email 
-            const response = await axios.post('http://localhost:3000/api/tickets', { 
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets`, { 
                 customer_name: customerName,
                 customer_email: customerEmail,
                 customer_phone: customerPhone,

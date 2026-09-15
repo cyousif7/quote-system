@@ -104,7 +104,7 @@ function Dashboard() {
                 </button>
             </div>
 
-            <div style={{ padding: '32px' }}>
+            <div style={{ padding: '32px', display: 'flex', justifyContent: 'center' }}>
                 <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                     <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                         <KanbanColumn title="New" status="new" tickets={newTickets} onTicketClick={setSelectedTicket} />

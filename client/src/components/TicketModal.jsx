@@ -6,6 +6,7 @@ function TicketModal({ ticket, onClose, onUpdate }) {
     const [pdfFile, setPdfFile] = useState(null)
     const [message, setMessage] = useState('')
     const [saving, setSaving] = useState(false)
+    const [workerMessage, setWorkerMessage] = useState(ticket.worker_message || '')
 
     const saveQuote = async () => {
         setSaving(true)
@@ -18,6 +19,22 @@ function TicketModal({ ticket, onClose, onUpdate }) {
             onUpdate()
         } catch {
             setMessage('Failed to save quote.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const saveMessage = async () => {
+        setSaving(true)
+        try {
+            await axios.patch(`http://localhost:3000/api/tickets/${ticket.id}/message`,
+                { worker_message: workerMessage },
+                { withCredentials: true }
+            )
+            setMessage('Message saved.')
+            onUpdate()
+        } catch {
+            setMessage('Failed to save message.')
         } finally {
             setSaving(false)
         }
@@ -113,6 +130,20 @@ function TicketModal({ ticket, onClose, onUpdate }) {
                             Save
                         </button>
                     </div>
+                </div>
+
+                <div style={sectionStyle}>
+                    <label style={labelStyle}>Message to Customer (optional)</label>
+                    <textarea
+                        value={workerMessage}
+                        onChange={e => setWorkerMessage(e.target.value)}
+                        placeholder="e.g. Diagnosis fee is $100, we'll quote from there once we take a look."
+                        rows={3}
+                        style={{ ...inputStyle, width: '100%', resize: 'vertical', marginBottom: '10px' }}
+                    />
+                    <button onClick={saveMessage} disabled={saving} style={buttonStyle(saving)}>
+                        Save Message
+                    </button>
                 </div>
 
                 <div style={sectionStyle}>

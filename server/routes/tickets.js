@@ -117,6 +117,28 @@ router.patch('/:id/quote', authMiddleware, async (req, res) =>{
     }
 });
 
+router.patch('/:id/message', authMiddleware, async (req, res) => {
+    try {
+        const { worker_message } = req.body;
+        const { id } = req.params;
+
+        const update = await pool.query(
+            `UPDATE tickets SET worker_message = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+            [worker_message, id]
+        );
+
+        res.status(200).json({
+            success: true,
+            tickets: update.rows[0],
+            message: "Message saved."
+        });
+    }
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+});
+
 const storageConfig = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
@@ -172,9 +194,9 @@ router.post('/:id/send', authMiddleware, async (req, res) => {
             });
         };
 
-        const { customer_name, customer_email, quote_amount, pdf_path, token } = custInfo.rows[0];
+        const { customer_name, customer_email, quote_amount, pdf_path, token, worker_message } = custInfo.rows[0];
 
-        await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path, token);
+        await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path, token, worker_message);
 
         const update = await pool.query(`UPDATE tickets SET status = 'sent', updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
 

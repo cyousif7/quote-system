@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -11,11 +11,12 @@ function Login() {
 
     const navigate = useNavigate();
 
+    const { login } = useAuth()
+
     const handleSubmit = async (e) => {
         e.preventDefault()  // stops the page from refreshing on form submit
         try {
-            // call POST /api/auth/login with email and password
-            const response = await axios.post('http://localhost:3000/api/auth/login', { email, password }, { withCredentials: true });
+            await login(email, password)
 
             // on success navigate to /dashboard
             navigate('/dashboard');

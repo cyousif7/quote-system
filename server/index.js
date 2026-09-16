@@ -32,7 +32,18 @@ const app = express();
 // Use helmet to prevent security vulnerabilities
 // TODO: Configure helmet CSP after frontend is built
 // helmet CSP must whitelist frontend domain, fonts, and any CDN resources
-app.use(helmet())
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:"],
+            scriptSrc: ["'self'"],
+            connectSrc: ["'self'"]
+        }
+    }
+}))
 
 // Force HTTPS in production
 if (process.env.NODE_ENV === 'production') {

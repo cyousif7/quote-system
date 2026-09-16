@@ -29,8 +29,10 @@ const app = express();
 
 // Middleware
 
+// One reverse proxy
+app.set('trust proxy', 1);
+
 // Use helmet to prevent security vulnerabilities
-// TODO: Configure helmet CSP after frontend is built
 // helmet CSP must whitelist frontend domain, fonts, and any CDN resources
 app.use(helmet({
     contentSecurityPolicy: {

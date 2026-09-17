@@ -43,15 +43,11 @@ function TicketModal({ ticket, onClose, onUpdate }) {
     const requestMoreInfo = async () => {
         setSaving(true)
         try {
-            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/message`,
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/request-info`,
                 { worker_message: workerMessage },
                 { withCredentials: true }
             )
-            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}`,
-                { status: 'needs_info' },
-                { withCredentials: true }
-            )
-            setMessage('Customer notified — request sent.')
+            setMessage('✓ Info request sent to customer!')
             onUpdate()
         } catch {
             setMessage('Failed to send request.')

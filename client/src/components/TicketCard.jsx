@@ -55,6 +55,8 @@ function TicketCard({ ticket, onClick }) {
             >
                 View Details
             </button>
+            {ticket.quote_sent_at && <span style={{fontSize: '11px', color: '#2E9E5B'}}>✓ Quote Sent</span>}
+            {ticket.info_request_sent_at && <span style={{fontSize: '11px', color: '#B7791F'}}>✓ Info Requested</span>}
         </div>
     )
 }

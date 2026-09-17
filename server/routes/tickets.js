@@ -50,6 +50,35 @@ router.post("/", [
     }
 });
 
+router.post('/:id/request-info', authMiddleware, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { worker_message } = req.body;
+
+        const update = await pool.query(
+            `UPDATE tickets SET status = 'needs_info', worker_message = $1, info_request_sent_at = NOW(), updated_at = NOW() WHERE id = $2 RETURNING *`,
+            [worker_message, id]
+        );
+
+        if (update.rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Ticket not found." });
+        }
+
+        const { customer_name, customer_email, token } = update.rows[0];
+        await sendInfoRequestEmail(customer_name, customer_email, worker_message, token);
+
+        res.status(200).json({
+            success: true,
+            tickets: update.rows[0],
+            message: "Info request sent to customer."
+        });
+    }
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+});
+
 router.get("/", authMiddleware, async (req, res) => {
     try {
         // Query database (Read) for all current tickets
@@ -77,11 +106,6 @@ router.patch("/:id", authMiddleware, async (req, res) => {
         const { id } = req.params;
 
         const update = await pool.query(`UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`, [status, id])
-
-        if (status === 'needs_info') {
-            const { customer_name, customer_email, worker_message, token } = update.rows[0];
-            await sendInfoRequestEmail(customer_name, customer_email, worker_message, token);
-        }
 
         res.status(200).json({ 
             success: true, 
@@ -202,7 +226,7 @@ router.post('/:id/send', authMiddleware, async (req, res) => {
 
         await sendQuoteEmail(customer_name, customer_email, quote_amount, pdf_path, token, worker_message);
 
-        const update = await pool.query(`UPDATE tickets SET status = 'sent', updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
+        const update = await pool.query(`UPDATE tickets SET status = 'sent', quote_sent_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING *`, [id]);
 
         res.status(200).json({
             success: true,

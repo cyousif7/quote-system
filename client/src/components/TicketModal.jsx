@@ -89,13 +89,28 @@ function TicketModal({ ticket, onClose, onUpdate }) {
 
         setSaving(true)
         try {
+            // Save quote amount and message first, so nothing blank ever gets sent
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/quote`,
+                { quote_amount: quoteAmount },
+                { withCredentials: true }
+            )
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/message`,
+                { worker_message: workerMessage },
+                { withCredentials: true }
+            )
+
+            // Now actually send
             await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}/send`,
                 {},
                 { withCredentials: true }
             )
-            setMessage('Sent to customer.')
+            setMessage('✓ Sent to customer successfully!')
             onUpdate()
-            onClose()
+
+            // Give the worker a moment to see the confirmation before the modal closes
+            setTimeout(() => {
+                onClose()
+            }, 1500)
         } catch {
             setMessage('Failed to send.')
         } finally {

@@ -55,8 +55,20 @@ function TicketCard({ ticket, onClick }) {
             >
                 View Details
             </button>
-            {ticket.quote_sent_at && <span style={{fontSize: '11px', color: '#2E9E5B'}}>✓ Quote Sent</span>}
-            {ticket.info_request_sent_at && <span style={{fontSize: '11px', color: '#B7791F'}}>✓ Info Requested</span>}
+            {(ticket.quote_sent_at || ticket.info_request_sent_at) && (
+                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {ticket.quote_sent_at && (
+                        <span style={{ fontSize: '11px', color: '#2E9E5B' }}>
+                            ✓ Quote Sent — {new Date(ticket.quote_sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(ticket.quote_sent_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                    )}
+                    {ticket.info_request_sent_at && (
+                        <span style={{ fontSize: '11px', color: '#B7791F' }}>
+                            ✓ Info Requested — {new Date(ticket.info_request_sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(ticket.info_request_sent_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

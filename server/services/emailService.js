@@ -47,7 +47,7 @@ async function sendQuoteEmail(customerName, customerEmail, quoteAmount, pdfPath,
         `;
 
         const emailOptions = {
-            from: `${shopName} <onboarding@resend.dev>`,
+            from: `${shopName} <${process.env.SHOP_EMAIL || 'quotes@princetoncarcarequotes.com'}>`,
             to: customerEmail,
             subject: 'Your Quote is Ready',
             html
@@ -93,7 +93,7 @@ async function notifyShopOfResponse(customerName, customerResponse, ticketId) {
         `;
 
         await resend.emails.send({
-            from: `${shopName} <onboarding@resend.dev>`,
+            from: `${shopName} <${process.env.SHOP_EMAIL || 'quotes@princetoncarcarequotes.com'}>`,
             to: process.env.SHOP_NOTIFICATION_EMAIL,
             subject: `${customerName} responded to their quote`,
             html
@@ -137,7 +137,7 @@ async function sendInfoRequestEmail(customerName, customerEmail, workerMessage, 
         `;
 
         await resend.emails.send({
-            from: `${shopName} <onboarding@resend.dev>`,
+            from: `${shopName} <${process.env.SHOP_EMAIL || 'quotes@princetoncarcarequotes.com'}>`,
             to: customerEmail,
             subject: `${shopName} needs more information`,
             html

@@ -6,6 +6,9 @@ function QuoteForm() {
     const [customerEmail, setCustomerEmail] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [vin, setVin] = useState('');
+    const [vehicleYear, setVehicleYear] = useState('');
+    const [vehicleMake, setVehicleMake] = useState('');
+    const [vehicleModel, setVehicleModel] = useState('');
     const [problemDescription, setProblemDescription] = useState('');
 
     const [error, setError] = useState('');
@@ -24,7 +27,10 @@ function QuoteForm() {
                 customer_name: customerName,
                 customer_email: customerEmail,
                 customer_phone: customerPhone,
-                vin,
+                vin: vin || undefined,
+                vehicle_year: vehicleYear,
+                vehicle_make: vehicleMake,
+                vehicle_model: vehicleModel,
                 problem_description: problemDescription 
             });
 
@@ -116,7 +122,10 @@ function QuoteForm() {
                         { label: 'Full Name', type: 'text', value: customerName, onChange: setCustomerName, placeholder: 'John Smith' },
                         { label: 'Email Address', type: 'email', value: customerEmail, onChange: setCustomerEmail, placeholder: 'john@example.com' },
                         { label: 'Phone Number', type: 'text', value: customerPhone, onChange: setCustomerPhone, placeholder: '555-123-4567' },
-                        { label: 'Vehicle VIN', type: 'text', value: vin, onChange: setVin, placeholder: '17-character VIN' },
+                        { label: 'Vehicle Year', type: 'text', value: vehicleYear, onChange: setVehicleYear, placeholder: '2018' },
+                        { label: 'Vehicle Make', type: 'text', value: vehicleMake, onChange: setVehicleMake, placeholder: 'Honda' },
+                        { label: 'Vehicle Model', type: 'text', value: vehicleModel, onChange: setVehicleModel, placeholder: 'Civic' },
+                        { label: 'Vehicle VIN (optional)', type: 'text', value: vin, onChange: setVin, placeholder: '17-character VIN, if known' },
                     ].map(({ label, type, value, onChange, placeholder }) => (
                         <div key={label} style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>

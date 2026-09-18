@@ -14,7 +14,10 @@ router.post("/", [
     body('customer_name').notEmpty(),
     body('customer_email').isEmail(),
     body('customer_phone').optional(),
-    body('vin').notEmpty().isLength({ min: 17, max: 17 }),
+    body('vehicle_year').notEmpty().isInt({ min: 1900, max: new Date().getFullYear() + 1 }),
+    body('vehicle_make').notEmpty(),
+    body('vehicle_model').notEmpty(),
+    body('vin').optional().isLength({ min: 17, max: 17 }),
     body('problem_description').notEmpty()
 ], async (req, res) => {
 
@@ -27,10 +30,19 @@ router.post("/", [
         // Declare variables that must match the name the frontend sent in req.body
         // These variable names are used as listed based on request's req.body attributes
         const { customer_name, customer_email, customer_phone, vin, problem_description } = req.body;
+        let { vehicle_year, vehicle_make, vehicle_model } = req.body;
+        let vehicle_trim = null;
 
-        // Get vehicle data from the vehicle lookup class
-        const vehicleData = await lookupVehicle(vin);
-        const { vehicle_year, vehicle_make, vehicle_model, vehicle_trim } = vehicleData || {};  // If returned vehicle data is null, destructure from an empty object instead
+        // If VIN provided, try to decode it and prefer that data
+        if (vin) {
+            const vehicleData = await lookupVehicle(vin);
+            if (vehicleData) {
+                vehicle_year = vehicleData.vehicle_year || vehicle_year;
+                vehicle_make = vehicleData.vehicle_make || vehicle_make;
+                vehicle_model = vehicleData.vehicle_model || vehicle_model;
+                vehicle_trim = vehicleData.vehicle_trim;
+            }
+        }
 
         // Insert values from the request into the tickets table and store the resulting tuples
         const result = await pool.query(`INSERT INTO tickets (customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`, [customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim]);

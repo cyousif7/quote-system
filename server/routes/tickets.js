@@ -27,6 +27,23 @@ router.post("/", [
     }
 
     try {
+        const { turnstile_token } = req.body;
+
+        const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                secret: process.env.TURNSTILE_SECRET_KEY,
+                response: turnstile_token
+            })
+        });
+
+        const turnstileResult = await turnstileResponse.json();
+
+        if (!turnstileResult.success) {
+            return res.status(400).json({ success: false, message: 'Bot verification failed. Please try again.' });
+        }
+
         // Declare variables that must match the name the frontend sent in req.body
         // These variable names are used as listed based on request's req.body attributes
         const { customer_name, customer_email, customer_phone, vin, problem_description } = req.body;

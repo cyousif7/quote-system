@@ -5,11 +5,19 @@ const pool = require("../config/db");
 const { body, validationResult } = require('express-validator');
 const logger = require('../config/logger');
 const authMiddleware = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
+
+// Define auth limiter (for going between pages on employee side)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: 'Too many requests, please try again later.' }
+});
 
 // Instantiate router construct
 const router = Router();
 
-router.post("/setup", [
+router.post("/setup", authLimiter, [
     body('email').isEmail(),
     body('password')
         .isLength({ min: 8 })
@@ -47,7 +55,7 @@ router.post("/setup", [
     };
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         

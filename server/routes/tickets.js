@@ -6,11 +6,19 @@ const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const { sendQuoteEmail, notifyShopOfResponse, sendInfoRequestEmail } = require('../services/emailService');
 const logger = require('../config/logger');
+const rateLimit = require("express-rate-limit");
+
+// Define ticket limiter
+const ticketLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { error: 'Too many requests, please try again later.' }
+});
 
 // Instantiate router construct
 const router = Router();
 
-router.post("/", [
+router.post("/", ticketLimiter, [
     body('customer_name').notEmpty(),
     body('customer_email').isEmail(),
     body('customer_phone').optional(),

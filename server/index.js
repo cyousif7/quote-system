@@ -70,20 +70,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173'
 }));
 
-// Rate limiter on all routes starting with /api/tickets
-// Limits each IP to 20 requests per 15 minutes
-const ticketLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes in milliseconds
-    max: 20,
-    message: { error: 'Too many requests, please try again later.' }
-});
-
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes in milliseconds
-    max: 10,
-    message: { error: 'Too many requests, please try again later.' }
-})
-
+// Global rate limiter - broad 500 count limit
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: process.env.NODE_ENV === 'production' ? 500 : 1000,
@@ -91,10 +78,6 @@ const globalLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
-
-app.use('/api/tickets', ticketLimiter);
-
-app.use('/api/auth', authLimiter);
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

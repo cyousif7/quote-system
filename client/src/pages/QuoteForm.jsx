@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 function QuoteForm() {
@@ -14,8 +14,29 @@ function QuoteForm() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [submittedToken, setSubmittedToken] = useState(null);
+    const [turnstileToken, setTurnstileToken] = useState('');
 
     const shopName = import.meta.env.VITE_SHOP_NAME || 'Your Shop'
+
+    useEffect(() => {
+        window.onTurnstileSuccess = (token) => {
+            setTurnstileToken(token)
+        }
+
+        const renderTurnstile = () => {
+            const widgetDiv = document.querySelector('.cf-turnstile')
+            if (window.turnstile && widgetDiv && !widgetDiv.hasChildNodes()) {
+                window.turnstile.render('.cf-turnstile', {
+                    sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
+                    callback: 'onTurnstileSuccess'
+                })
+            } else if (!window.turnstile) {
+                setTimeout(renderTurnstile, 100)
+            }
+        }
+
+        renderTurnstile()
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault()  // stops the page from refreshing on form submit
@@ -31,7 +52,8 @@ function QuoteForm() {
                 vehicle_year: vehicleYear,
                 vehicle_make: vehicleMake,
                 vehicle_model: vehicleModel,
-                problem_description: problemDescription 
+                problem_description: problemDescription,
+                turnstile_token: turnstileToken 
             });
 
             // on success, store token
@@ -181,6 +203,13 @@ function QuoteForm() {
                             {error}
                         </p>
                     )}
+
+                    <div
+                        className="cf-turnstile"
+                        data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                        data-callback="onTurnstileSuccess"
+                        style={{ marginBottom: '16px' }}
+                    ></div>
 
                     <button
                         type="submit"

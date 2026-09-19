@@ -53,7 +53,7 @@ function QuoteForm() {
                 vehicle_make: vehicleMake,
                 vehicle_model: vehicleModel,
                 problem_description: problemDescription,
-                turnstile_token: turnstileToken 
+                turnstile_token: document.querySelector('.cf-turnstile input[name="cf-turnstile-response"]')?.value || '' 
             });
 
             // on success, store token

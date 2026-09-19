@@ -4,6 +4,7 @@ import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import KanbanColumn from '../components/KanbanColumn'
 import TicketModal from '../components/TicketModal'
 import { useAuth } from '../context/AuthContext'
+import { Link } from 'react-router-dom'
 
 function Dashboard() {
     const [tickets, setTickets] = useState([])
@@ -88,21 +89,38 @@ function Dashboard() {
                 <h1 style={{ color: '#FFFFFF', fontSize: '20px', fontWeight: '700' }}>
                     {shopName}
                 </h1>
-                <button
-                    onClick={logout}
-                    style={{
-                        padding: '9px 18px',
-                        backgroundColor: 'transparent',
-                        color: '#FFFFFF',
-                        border: '1.5px solid rgba(255,255,255,0.4)',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Log Out
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <Link
+                        to="/archived"
+                        style={{
+                            padding: '9px 18px',
+                            backgroundColor: 'transparent',
+                            color: '#FFFFFF',
+                            border: '1.5px solid rgba(255,255,255,0.4)',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        Archived Tickets
+                    </Link>
+                    <button
+                        onClick={logout}
+                        style={{
+                            padding: '9px 18px',
+                            backgroundColor: 'transparent',
+                            color: '#FFFFFF',
+                            border: '1.5px solid rgba(255,255,255,0.4)',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Log Out
+                    </button>
+                </div>
             </div>
 
             <div style={{ padding: '32px', display: 'flex', justifyContent: 'center' }}>

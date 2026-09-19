@@ -112,6 +112,42 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 });
 
+router.get("/", authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM tickets WHERE status != 'archived' ORDER BY created_at DESC`);
+
+        res.status(200).json({ 
+            success: true, 
+            tickets: result.rows, 
+            message: "Database retrieval successful." })
+    }
+
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error."});
+    }
+});
+
+router.get("/archived", authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`SELECT * FROM tickets WHERE status = 'archived' ORDER BY updated_at DESC`);
+
+        res.status(200).json({ 
+            success: true, 
+            tickets: result.rows, 
+            message: "Archived tickets retrieved successfully." })
+    }
+
+    catch(error) {
+        logger.error(error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error."});
+    }
+});
+
 router.patch("/:id", authMiddleware, async (req, res) => {
     try {
         const { status } = req.body;

@@ -75,6 +75,28 @@ function TicketModal({ ticket, onClose, onUpdate }) {
         }
     }
 
+    const archiveTicket = async () => {
+        const confirmed = window.confirm('Archive this ticket? It will be removed from the active dashboard but can still be viewed in the archive.')
+        if (!confirmed) return
+
+        setSaving(true)
+        try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/tickets/${ticket.id}`,
+                { status: 'archived' },
+                { withCredentials: true }
+            )
+            setMessage('✓ Ticket archived.')
+            onUpdate()
+            setTimeout(() => {
+                onClose()
+            }, 1000)
+        } catch {
+            setMessage('Failed to archive ticket.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
     const sendToCustomer = async () => {
         if (!ticket.pdf_path) {
             const confirmed = window.confirm(
@@ -233,6 +255,26 @@ function TicketModal({ ticket, onClose, onUpdate }) {
                     >
                         Send to Customer
                     </button>
+                    
+                        <button
+                            onClick={archiveTicket}
+                            disabled={saving}
+                            style={{
+                                width: '100%',
+                                padding: '11px',
+                                marginTop: '12px',
+                                backgroundColor: 'transparent',
+                                color: '#4A4A5A',
+                                border: '1.5px solid #E8ECF4',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: saving ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            Archive Ticket
+                        </button>
+                    
                 </div>
 
                 {message && (

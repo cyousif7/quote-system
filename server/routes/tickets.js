@@ -22,11 +22,20 @@ router.post("/", ticketLimiter, [
     body('customer_name').notEmpty(),
     body('customer_email').isEmail(),
     body('customer_phone').optional(),
-    body('vehicle_year').notEmpty().isInt({ min: 1900, max: new Date().getFullYear() + 1 }),
-    body('vehicle_make').notEmpty(),
-    body('vehicle_model').notEmpty(),
+    body('problem_description').notEmpty(),
     body('vin').optional().isLength({ min: 17, max: 17 }),
-    body('problem_description').notEmpty()
+    body().custom((value, { req }) => {
+        const hasVin = req.body.vin && req.body.vin.length === 17;
+        const hasFullManualDetails = req.body.vehicle_year && req.body.vehicle_make && req.body.vehicle_model && req.body.vehicle_engine;
+
+        if (!hasVin && !hasFullManualDetails) {
+            throw new Error('Provide a VIN, or Year, Make, Model, and Engine.');
+        }
+        if (!req.body.vehicle_transmission) {
+            throw new Error('Transmission type is required.');
+        }
+        return true;
+    })
 ], async (req, res) => {
 
     const errors = validationResult(req);
@@ -55,8 +64,7 @@ router.post("/", ticketLimiter, [
         // Declare variables that must match the name the frontend sent in req.body
         // These variable names are used as listed based on request's req.body attributes
         const { customer_name, customer_email, customer_phone, vin, problem_description } = req.body;
-        let { vehicle_year, vehicle_make, vehicle_model } = req.body;
-        let vehicle_trim = null;
+        let { vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vehicle_engine, vehicle_transmission } = req.body;
 
         // If VIN provided, try to decode it and prefer that data
         if (vin) {
@@ -65,12 +73,14 @@ router.post("/", ticketLimiter, [
                 vehicle_year = vehicleData.vehicle_year || vehicle_year;
                 vehicle_make = vehicleData.vehicle_make || vehicle_make;
                 vehicle_model = vehicleData.vehicle_model || vehicle_model;
-                vehicle_trim = vehicleData.vehicle_trim;
+                vehicle_trim = vehicleData.vehicle_trim || vehicle_trim;
+                vehicle_engine = vehicleData.vehicle_engine || vehicle_engine;
+                vehicle_transmission = vehicleData.vehicle_transmission || vehicle_transmission;
             }
         }
 
         // Insert values from the request into the tickets table and store the resulting tuples
-        const result = await pool.query(`INSERT INTO tickets (customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`, [customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim]);
+        const result = await pool.query(`INSERT INTO tickets (customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vehicle_engine, vehicle_transmission) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`, [customer_name, customer_email, customer_phone, vin, problem_description, vehicle_year, vehicle_make, vehicle_model, vehicle_trim, vehicle_engine, vehicle_transmission]);
 
         // Response to frontend request
         res.status(201).json({ 

@@ -164,7 +164,7 @@ function TicketModal({ ticket, onClose, onUpdate }) {
 
                 <div style={sectionStyle}>
                     <DetailLine label="VIN" value={ticket.vin} />
-                    <DetailLine label="Vehicle" value={`${ticket.vehicle_year || ''} ${ticket.vehicle_make || ''} ${ticket.vehicle_model || ''} ${ticket.vehicle_trim || ''}`.trim() || 'Not decoded'} />
+                    <DetailLine label="Vehicle" value={`${ticket.vehicle_year || ''} ${ticket.vehicle_make || ''} ${ticket.vehicle_model || ''} ${ticket.vehicle_trim || ''} ${ticket.vehicle_engine || ''} ${ticket.vehicle_transmission || ''}`.trim() || 'Not decoded'} />
                     <DetailLine label="Problem" value={ticket.problem_description} />
                     <DetailLine label="Status" value={ticket.status} />
                     {ticket.customer_response && (

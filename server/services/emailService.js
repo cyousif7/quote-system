@@ -28,6 +28,10 @@ async function sendQuoteEmail(customerName, customerEmail, quoteAmount, pdfPath,
                     <p style="margin: 4px 0 0 0; color: #1B3A6B; font-size: 28px; font-weight: 700;">$${quoteAmount}</p>
                 </div>
 
+                <p style="color: #6B7A8F; font-size: 13px; font-weight: 500; margin: 8px 0 0 0;">
+                    This is a rough estimate based on the information provided and may change after an in-person inspection.
+                </p>
+
                 ${workerMessage ? `
                 <div style="border-left: 3px solid #2E5BA8; padding-left: 16px; margin: 20px 0;">
                     <p style="margin: 0; color: #4A4A5A; font-size: 13px; font-weight: 600;">Note from our team</p>

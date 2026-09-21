@@ -33,7 +33,7 @@ function TicketCard({ ticket, onClick }) {
                     {ticket.customer_name}
                 </p>
                 <p style={{ color: '#4A4A5A', fontSize: '13px', marginBottom: '6px' }}>
-                    {ticket.vehicle_year} {ticket.vehicle_make} {ticket.vehicle_model}
+                    {ticket.vehicle_year} {ticket.vehicle_make} {ticket.vehicle_model} {ticket.vehicle_trim} {ticket.vehicle_engine}
                 </p>
                 <p style={{ color: '#4A4A5A', fontSize: '13px', marginBottom: '10px' }}>
                     {ticket.problem_description}

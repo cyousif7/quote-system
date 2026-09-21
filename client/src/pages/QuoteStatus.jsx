@@ -118,6 +118,11 @@ function QuoteStatus() {
                     {ticket.quote_amount && (
                         <DetailRow label="Quote Amount" value={`$${ticket.quote_amount}`} highlight />
                     )}
+                    {ticket.quote_amount && (
+                        <p style={{ color: '#8FA0B8', fontSize: '12px', marginTop: '6px' }}>
+                            This is a rough estimate and may change after an in-person inspection.
+                        </p>
+                    )}
                 </div>
                 {ticket.status === 'new' && (
                     <p style={{ marginTop: '24px', color: '#4A4A5A', fontSize: '14px' }}>

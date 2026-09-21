@@ -9,6 +9,9 @@ function QuoteForm() {
     const [vehicleYear, setVehicleYear] = useState('');
     const [vehicleMake, setVehicleMake] = useState('');
     const [vehicleModel, setVehicleModel] = useState('');
+    const [vehicleTrim, setVehicleTrim] = useState('');
+    const [vehicleEngine, setVehicleEngine] = useState('');
+    const [vehicleTransmission, setVehicleTransmission] = useState('');
     const [problemDescription, setProblemDescription] = useState('');
 
     const [error, setError] = useState('');
@@ -39,9 +42,25 @@ function QuoteForm() {
     }, []);
 
     const handleSubmit = async (e) => {
-        e.preventDefault()  // stops the page from refreshing on form submit
+        e.preventDefault()
         setLoading(true);
-        
+        setError('');
+
+        const hasVin = vin.trim().length === 17;
+        const hasManualDetails = vehicleYear && vehicleMake && vehicleModel && vehicleEngine;
+
+        if (!hasVin && !hasManualDetails) {
+            setError('Please provide your VIN, or fill in Year, Make, Model, and Engine.');
+            setLoading(false);
+            return;
+        };
+
+        if (!vehicleTransmission) {
+            setError('Please provide the transmission type.');
+            setLoading(false);
+            return;
+        };
+
         try {
             // call POST /api/tickets with email 
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/tickets`, { 
@@ -49,9 +68,12 @@ function QuoteForm() {
                 customer_email: customerEmail,
                 customer_phone: customerPhone,
                 vin: vin || undefined,
-                vehicle_year: vehicleYear,
-                vehicle_make: vehicleMake,
-                vehicle_model: vehicleModel,
+                vehicle_year: vehicleYear || undefined,
+                vehicle_make: vehicleMake || undefined,
+                vehicle_model: vehicleModel || undefined,
+                vehicle_trim: vehicleTrim || undefined,
+                vehicle_engine: vehicleEngine || undefined,
+                vehicle_transmission: vehicleTransmission || undefined,
                 problem_description: problemDescription,
                 turnstile_token: document.querySelector('.cf-turnstile input[name="cf-turnstile-response"]')?.value || '' 
             });
@@ -137,6 +159,9 @@ function QuoteForm() {
                     <p style={{ color: '#4A4A5A', marginTop: '8px', fontSize: '15px' }}>
                         Request a quote — no phone call needed.
                     </p>
+                    <p style={{ color: '#8FA0B8', marginTop: '4px', fontSize: '13px' }}>
+                        Quotes are rough estimates based on the information provided and may change after an in-person inspection.
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -144,10 +169,6 @@ function QuoteForm() {
                         { label: 'Full Name', type: 'text', value: customerName, onChange: setCustomerName, placeholder: 'John Smith' },
                         { label: 'Email Address', type: 'email', value: customerEmail, onChange: setCustomerEmail, placeholder: 'john@example.com' },
                         { label: 'Phone Number', type: 'text', value: customerPhone, onChange: setCustomerPhone, placeholder: '555-123-4567' },
-                        { label: 'Vehicle Year', type: 'text', value: vehicleYear, onChange: setVehicleYear, placeholder: '2018' },
-                        { label: 'Vehicle Make', type: 'text', value: vehicleMake, onChange: setVehicleMake, placeholder: 'Honda' },
-                        { label: 'Vehicle Model', type: 'text', value: vehicleModel, onChange: setVehicleModel, placeholder: 'Civic' },
-                        { label: 'Vehicle VIN (optional)', type: 'text', value: vin, onChange: setVin, placeholder: '17-character VIN, if known' },
                     ].map(({ label, type, value, onChange, placeholder }) => (
                         <div key={label} style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
@@ -169,6 +190,86 @@ function QuoteForm() {
                             />
                         </div>
                     ))}
+
+                    <p style={{ color: '#1B3A6B', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
+                        Have your VIN? Enter it for the fastest, most accurate quote.
+                    </p>
+
+                    {[
+                        { label: 'Vehicle VIN', type: 'text', value: vin, onChange: setVin, placeholder: '17-character VIN, if known' },
+                    ].map(({ label, type, value, onChange, placeholder }) => (
+                        <div key={label} style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
+                                {label}
+                            </label>
+                            <input
+                                type={type}
+                                value={value}
+                                onChange={e => onChange(e.target.value)}
+                                placeholder={placeholder}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1.5px solid #E8ECF4',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                    ))}
+
+                    <p style={{ color: '#4A4A5A', fontWeight: '600', fontSize: '13px', margin: '20px 0 12px' }}>
+                        Don't have your VIN? Fill in these details instead:
+                    </p>
+
+                    {[
+                        { label: 'Vehicle Year', type: 'text', value: vehicleYear, onChange: setVehicleYear, placeholder: '2018' },
+                        { label: 'Vehicle Make', type: 'text', value: vehicleMake, onChange: setVehicleMake, placeholder: 'Honda' },
+                        { label: 'Vehicle Model', type: 'text', value: vehicleModel, onChange: setVehicleModel, placeholder: 'Civic' },
+                        { label: 'Engine Size', type: 'text', value: vehicleEngine, onChange: setVehicleEngine, placeholder: '2.0L 4-Cylinder' },
+                        { label: 'Trim (optional)', type: 'text', value: vehicleTrim, onChange: setVehicleTrim, placeholder: 'EX, Sport, Limited' }
+                    ].map(({ label, type, value, onChange, placeholder }) => (
+                        <div key={label} style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
+                                {label}
+                            </label>
+                            <input
+                                type={type}
+                                value={value}
+                                onChange={e => onChange(e.target.value)}
+                                placeholder={placeholder}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1.5px solid #E8ECF4',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                    ))}
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
+                            Transmission
+                        </label>
+                        <input
+                            type="text"
+                            value={vehicleTransmission}
+                            onChange={e => setVehicleTransmission(e.target.value)}
+                            placeholder="Automatic or Manual"
+                            style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                border: '1.5px solid #E8ECF4',
+                                borderRadius: '8px',
+                                fontSize: '15px',
+                                outline: 'none'
+                            }}
+                        />
+                    </div>
 
                     <div style={{ marginBottom: '24px' }}>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', color: '#1B3A6B', fontSize: '14px' }}>
